@@ -2,7 +2,7 @@ import base64
 import json
 import websockets
 import asyncio
-
+from websockets.asyncio.server import serve
 # Store connected clients
 connected_clients = set()
 
@@ -72,8 +72,8 @@ async def handler(websocket, path):
 
 async def main():
     ip = "192.168.11.106"
-    port = 8002
-    async with websockets.serve(handler, "", port):
+    port = 8080
+    async with serve(handler, host="", port=port):
         print(f"WebSocket server running on ws://{ip}:{port}...")
         await asyncio.get_running_loop().create_future()  # run forever
 
