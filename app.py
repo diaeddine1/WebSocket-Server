@@ -92,8 +92,7 @@ async def main():
     async with serve(
         handler,
         host="",
-        port=8080,
-        process_request=health_check,
+        port=8080
     ):
         await stop
 
