@@ -75,7 +75,9 @@ async def handler(websocket, path):
         print("Client disconnected")
 
 async def main():
-    ip  = os.environ.get("URL")
+    URL  = os.environ.get("URL")
+    ip = "192.168.11.106"
+
     port = os.environ.get("PORT",8000)
     async with websockets.serve(handler,"",port):
         print(f"WebSocket server running on wss://{ip}:{port}...")
