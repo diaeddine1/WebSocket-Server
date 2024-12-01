@@ -4,8 +4,14 @@ import websockets
 import asyncio
 import os
 import http
+
+from dotenv import load_dotenv
+
+load_dotenv()
 # Store connected clients
 connected_clients = set()
+
+
 
 async def handler(websocket, path):
     # Add new connection to the set
@@ -73,12 +79,12 @@ async def handler(websocket, path):
 
 
 async def main():
-    async def main():
-        ip = "0.0.0.0"
-        port = 8002
-        async with websockets.serve(handler, ip, port):
-            print(f"WebSocket server running on ws://{ip}:{port}...")
-            await asyncio.get_running_loop().create_future()  # run forever
+    
+    ip = "0.0.0.0"
+    port = 10000
+    async with websockets.serve(handler, ip, port):
+        print(f"WebSocket server running on ws://{ip}:{port}...")
+        await asyncio.get_running_loop().create_future()  # run forever
 
 if __name__ == "__main__":
     asyncio.run(main())
