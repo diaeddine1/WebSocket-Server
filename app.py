@@ -76,7 +76,7 @@ async def handler(websocket, path):
 
 async def main():
     URL  = os.environ.get("URL")
-    ip = "192.168.11.106"
+    ip = "0.0.0.0"
 
     port = os.environ.get("PORT",8000)
     async with websockets.serve(handler,ip,port):
