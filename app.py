@@ -87,6 +87,7 @@ async def main():
     loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
 
     async with serve(
+        handler,
         host="",
         port=os.environ.get("PORT",8000),
         process_request=health_check,
