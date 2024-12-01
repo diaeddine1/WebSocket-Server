@@ -11,11 +11,11 @@ load_dotenv()
 connected_clients = set()
 
 async def handler(websocket, path):
-    # Add new connection to the set
-    connected_clients.add(websocket)
-    print("Client connected")
-
     try:
+        # Add new connection to the set
+        connected_clients.add(websocket)
+        print("Client connected")
+
         async for message in websocket:
             try:
                 payload = json.loads(message)  # Try to decode the message
@@ -33,28 +33,28 @@ async def handler(websocket, path):
                     # Log object detection information
                     response["yolo_class_id"] = payload["yolo_class_id"]
                     response["yolo_id"] = payload["yolo_id"]
-                    response["frame_image"]=""
+                    response["frame_image"] = ""
                     response["confidence"] = payload["confidence"]
                     response["frame_time"] = payload["frame_time"]
                     response["position_X"] = payload["position_X"]
                     response["position_Y"] = payload["position_Y"]
-                   
                 else:
                     # If it's not object detection, handle it like a regular message
                     response["message"] = "Non-object detection message received"
+
                 if 'frame_image' in payload:
                     print("The image Exists in the Payload")
                     base64_image = payload["frame_image"]
                     image_data = base64.b64decode(base64_image)
                     image_label = "Alert.jpg"
-                    with open(image_label,"wb") as image_file:
+                    with open(image_label, "wb") as image_file:
                         image_file.write(image_data)
                     print(f"Image Saved as {image_label}")
-                    with open(image_label,"rb") as image_file:
+                    with open(image_label, "rb") as image_file:
                         image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
                         response["frame_image"] = image_base64 
                 else:
-                    response["frame_image"] = None 
+                    response["frame_image"] = None
 
                 # Send the response to all connected clients
                 for client in connected_clients:
@@ -69,17 +69,20 @@ async def handler(websocket, path):
 
     except websockets.exceptions.ConnectionClosed as e:
         print(f"Connection closed: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
     finally:
         # Client disconnected, clean up after iteration
         connected_clients.discard(websocket)  # Use discard to avoid KeyError if websocket isn't in set
         print("Client disconnected")
 
 async def main():
-    URL  = os.environ.get("URL")
-    ip = "0.0.0.0"
+    URL = os.environ.get("URL")
+    ip = "192.168.11.106"
 
-    port = os.environ.get("PORT",8000)
-    async with websockets.serve(handler,ip,port=port):
+    port = os.environ.get("PORT", 8000)
+    print(f"Server is running on port: {port}")
+    async with websockets.serve(handler, ip, port=port):
         print(f"WebSocket server running on wss://{ip}:{port}...")
         await asyncio.get_running_loop().create_future()  # run forever
 
