@@ -77,16 +77,23 @@ async def handler(websocket, path):
         connected_clients.discard(websocket)  # Use discard to avoid KeyError if websocket isn't in set
         print("Client disconnected")
 def health_check(connection, request):
+    # Respond to health check or monitoring HTTP requests
     if request.path == "/healthz":
         return connection.respond(http.HTTPStatus.OK, "OK\n")
+    # Respond to any other HTTP requests (e.g., HEAD or GET)
+    elif request.method in ("HEAD", "GET"):
+        return connection.respond(http.HTTPStatus.METHOD_NOT_ALLOWED, "WebSocket connection required\n")
+    else:
+        return connection.respond(http.HTTPStatus.BAD_REQUEST, "Bad request\n")
+
     
 async def main():
     # Set the stop condition when receiving SIGTERM.
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
-    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+    
 
-    async with serve(
+    async with websockets.serve(
         handler,
         host="",
         port=os.environ.get("PORT",8000),
@@ -95,4 +102,6 @@ async def main():
         await stop
 
 if __name__ == "__main__":
+    print("Starting the main function")
     asyncio.run(main())
+    print("Main function running")
