@@ -79,7 +79,7 @@ async def main():
     ip = "192.168.11.106"
 
     port = os.environ.get("PORT",8000)
-    async with websockets.serve(handler,"",port):
+    async with websockets.serve(handler,ip,port):
         print(f"WebSocket server running on wss://{ip}:{port}...")
         await asyncio.get_running_loop().create_future()  # run forever
 
