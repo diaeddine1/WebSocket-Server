@@ -11,11 +11,11 @@ load_dotenv()
 connected_clients = set()
 
 async def handler(websocket, path):
-    try:
+    
         # Add new connection to the set
-        connected_clients.add(websocket)
-        print("Client connected")
-
+    connected_clients.add(websocket)
+    print("Client connected")
+    try:
         async for message in websocket:
             try:
                 payload = json.loads(message)  # Try to decode the message
@@ -69,20 +69,19 @@ async def handler(websocket, path):
 
     except websockets.exceptions.ConnectionClosed as e:
         print(f"Connection closed: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
     finally:
         # Client disconnected, clean up after iteration
         connected_clients.discard(websocket)  # Use discard to avoid KeyError if websocket isn't in set
         print("Client disconnected")
 
 async def main():
-    URL = os.environ.get("URL")
-    #ip = "192.168.11.106"
+    #URL = os.environ.get("URL")
+    ip = "192.168.11.106"
 
-    port = os.environ.get("PORT", 8000)
-    print(f"Server is running on port: {port}")
-    async with websockets.serve(handler, "", port=port):
+    port = 8002 
+    #os.environ.get("PORT", 8000)
+  
+    async with websockets.serve(handler, ip, port=port):
         print(f"WebSocket server running on wss://{port}...")
         await asyncio.get_running_loop().create_future()  # run forever
 
