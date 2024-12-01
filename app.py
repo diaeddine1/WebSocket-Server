@@ -2,12 +2,8 @@ import base64
 import json
 import websockets
 import asyncio
-import http
 import os
-import signal
-import sys
 from dotenv import load_dotenv
-from websockets.asyncio.server import serve
 
 load_dotenv()
 
@@ -37,24 +33,24 @@ async def handler(websocket, path):
                     # Log object detection information
                     response["yolo_class_id"] = payload["yolo_class_id"]
                     response["yolo_id"] = payload["yolo_id"]
-                    response["frame_image"] = ""
+                    response["frame_image"]=""
                     response["confidence"] = payload["confidence"]
                     response["frame_time"] = payload["frame_time"]
                     response["position_X"] = payload["position_X"]
                     response["position_Y"] = payload["position_Y"]
+                   
                 else:
                     # If it's not object detection, handle it like a regular message
                     response["message"] = "Non-object detection message received"
-                
                 if 'frame_image' in payload:
                     print("The image Exists in the Payload")
                     base64_image = payload["frame_image"]
                     image_data = base64.b64decode(base64_image)
                     image_label = "Alert.jpg"
-                    with open(image_label, "wb") as image_file:
+                    with open(image_label,"wb") as image_file:
                         image_file.write(image_data)
                     print(f"Image Saved as {image_label}")
-                    with open(image_label, "rb") as image_file:
+                    with open(image_label,"rb") as image_file:
                         image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
                         response["frame_image"] = image_base64 
                 else:
@@ -78,38 +74,12 @@ async def handler(websocket, path):
         connected_clients.discard(websocket)  # Use discard to avoid KeyError if websocket isn't in set
         print("Client disconnected")
 
-def health_check(connection, request):
-    # Respond to health check or monitoring HTTP requests
-    if request.path == "/healthz":
-        return connection.respond(http.HTTPStatus.OK, "OK\n")
-    # Respond to any other HTTP requests (e.g., HEAD or GET)
-    elif request.method in ("HEAD", "GET"):
-        return connection.respond(http.HTTPStatus.METHOD_NOT_ALLOWED, "WebSocket connection required\n")
-    else:
-        return connection.respond(http.HTTPStatus.BAD_REQUEST, "Bad request\n")
-
 async def main():
-    # Set the stop condition when receiving SIGTERM (only for Unix-like systems).
-    loop = asyncio.get_running_loop()
-    stop = loop.create_future()
-
-    print(sys.platform)
-
-    if sys.platform == 'win32':
-        print("windows")
-    
-    else :
-        loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
-
-    async with serve(
-        handler,
-        host="",
-        port=os.environ.get("PORT", 8000),
-        process_request=health_check,
-    ):
-        await stop
+    ip  = os.environ.get("URL")
+    port = os.environ.get("PORT",8000)
+    async with websockets.serve(handler,"",port):
+        print(f"WebSocket server running on wss://{ip}:{port}...")
+        await asyncio.get_running_loop().create_future()  # run forever
 
 if __name__ == "__main__":
-    print("Starting the main function")
     asyncio.run(main())
-    print("Main function running")
