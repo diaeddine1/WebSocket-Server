@@ -6,7 +6,9 @@ import os
 import http
 
 from dotenv import load_dotenv
+import signal
 
+from websockets.asyncio.server import serve
 load_dotenv()
 # Store connected clients
 connected_clients = set()
@@ -77,14 +79,23 @@ async def handler(websocket, path):
         connected_clients.discard(websocket)  # Use discard to avoid KeyError if websocket isn't in set
         print("Client disconnected")
 
+def health_check(connection, request):
+    if request.path == "/healthz":
+        return connection.respond(http.HTTPStatus.OK, "OK\n")
 
 async def main():
     
-    ip = "0.0.0.0"
-    port = 10000
-    async with websockets.serve(handler, ip, port):
-        print(f"WebSocket server running on ws://{ip}:{port}...")
-        await asyncio.get_running_loop().create_future()  # run forever
+    loop = asyncio.get_running_loop()
+    stop = loop.create_future()
+    #loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+
+    async with serve(
+        handler,
+        host="",
+        port=8080,
+        process_request=health_check,
+    ):
+        await stop
 
 if __name__ == "__main__":
     asyncio.run(main())
