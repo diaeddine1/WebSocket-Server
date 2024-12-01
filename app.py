@@ -2,9 +2,14 @@ import base64
 import json
 import websockets
 import asyncio
+import http
 import os
-import cv2
-import numpy as np
+import signal
+from dotenv import load_dotenv
+from websockets.asyncio.server import serve
+
+load_dotenv()
+
 # Store connected clients
 connected_clients = set()
 
@@ -71,13 +76,22 @@ async def handler(websocket, path):
         # Client disconnected, clean up after iteration
         connected_clients.discard(websocket)  # Use discard to avoid KeyError if websocket isn't in set
         print("Client disconnected")
-
+def health_check(connection, request):
+    if request.path == "/healthz":
+        return connection.respond(http.HTTPStatus.OK, "OK\n")
+    
 async def main():
-    ip = "0.0.0.0"
-    port = 8002
-    async with websockets.serve(handler, ip, port=int(os.environ['PORT'])):
-        print(f"WebSocket server running on ws://{ip}:{port}...")
-        await asyncio.get_running_loop().create_future()  # run forever
+    # Set the stop condition when receiving SIGTERM.
+    loop = asyncio.get_running_loop()
+    stop = loop.create_future()
+    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+
+    async with serve(
+        host="",
+        port=os.environ.get("PORT",8000),
+        process_request=health_check,
+    ):
+        await stop
 
 if __name__ == "__main__":
     asyncio.run(main())
