@@ -89,10 +89,11 @@ async def main():
     stop = loop.create_future()
     #loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
 
-    async with serve(
+    async with websockets.serve(
         handler,
         host="",
-        port=8080
+        port=8080,
+        process_request=health_check
     ):
         await stop
 
