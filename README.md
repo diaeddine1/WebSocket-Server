@@ -16,7 +16,7 @@ This repository contains a Python WebSocket server built with `websockets`. It s
 
 1. Clone this repository:
     ```bash
-    git clone [https://github.com/<your-username>/<repository-name>.git](https://github.com/diaeddine1/WebSocket-Server.git)
+    git clone https://github.com/diaeddine1/WebSocket-Server.git
     cd WebsocketServer
     ```
 
