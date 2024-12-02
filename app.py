@@ -3,8 +3,7 @@ import json
 import websockets
 import asyncio
 import os
-import cv2
-import numpy as np
+
 # Store connected clients
 connected_clients = set()
 
